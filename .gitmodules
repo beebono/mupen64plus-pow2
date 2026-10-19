@@ -1,0 +1,24 @@
+[submodule "ext/mupen64plus-core-dento"]
+	path = ext/mupen64plus-core-dento
+	url = https://github.com/beebono/mupen64plus-core-dento.git
+	branch = devel
+[submodule "ext/mupen64plus-ui-inn"]
+	path = ext/mupen64plus-ui-inn
+	url = https://github.com/beebono/mupen64plus-ui-inn.git
+	branch = devel
+[submodule "ext/mupen64plus-rdp-foir"]
+	path = ext/mupen64plus-rdp-foir
+	url = https://github.com/beebono/mupen64plus-rdp-foir.git
+	branch = devel
+[submodule "ext/mupen64plus-rsp-armlet"]
+	path = ext/mupen64plus-rsp-armlet
+	url = https://github.com/beebono/mupen64plus-rsp-armlet.git
+	branch = devel
+[submodule "ext/mupen64plus-audio-altru"]
+	path = ext/mupen64plus-audio-altru
+	url = https://github.com/beebono/mupen64plus-audio-altru.git
+	branch = devel
+[submodule "ext/mupen64plus-input-suxty"]
+	path = ext/mupen64plus-input-suxty
+	url = https://github.com/beebono/mupen64plus-input-suxty.git
+	branch = devel

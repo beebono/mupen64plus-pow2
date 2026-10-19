@@ -1,0 +1,9 @@
+# build outputs and working copies
+/out/
+/work/
+*.a
+*.o
+*.d
+*.so
+*.so.*
+__pycache__/

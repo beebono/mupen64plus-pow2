@@ -1,0 +1,8 @@
+DebugMessage
+CoreHandle
+DetachCoreLib
+g_Verbose
+osal_free_lib_list
+osal_library_search
+osal_libsearchdirs
+osal_libsearchpath

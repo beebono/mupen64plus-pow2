@@ -1,0 +1,10 @@
+CoreHandle
+DetachCoreLib
+combinepath
+DebugMessage
+g_Verbose
+osal_dynlib_getproc
+osal_free_lib_list
+osal_library_search
+osal_libsearchdirs
+osal_libsearchpath
