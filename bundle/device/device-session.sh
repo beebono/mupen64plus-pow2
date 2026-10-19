@@ -19,8 +19,8 @@ sf "$BUNDLE" $X/bundle/mupen64plus
 ssh "$DEV" "chmod +x $X/bundle/mupen64plus"
 for p in mupen64plus-rdp-foir mupen64plus-rsp-armlet mupen64plus-audio-altru mupen64plus-input-suxty; do sf "$SODIR/$p.so" $X/plug/$p.so; done
 sf "$H/rg35xxsp_functions.sh" $X/rg35xxsp_functions.sh
-sf "$R/mupen64plus-rsp-armlet/tools/equiv/device/rg35xxsp_session.sh" $X/rg35xxsp_session.sh
-sf "$R/toolchains/rg35xxsp/scripts/cpu_perf.sh" $X/cpu_perf.sh
+sf "$R/mupen64plus-pow2/ext/mupen64plus-rsp-armlet/tools/equiv/device/rg35xxsp_session.sh" $X/rg35xxsp_session.sh
+sf "$R/resources/toolchains/rg35xxsp/scripts/cpu_perf.sh" $X/cpu_perf.sh
 ssh "$DEV" "rm -rf $X/out/* $X/done; cat > $X/runs.txt" <<< "$RUNS"
 ssh "$DEV" "MAXWAIT=$WAIT PIN=$PIN timeout $((WAIT + 120)) sh $X/rg35xxsp_session.sh $X" > "$LOCAL/session.$LABEL.out" 2>&1 || true
 ssh "$DEV" "pgrep -x mupen64plus" >> "$LOCAL/session.$LABEL.out" 2>&1 || true

@@ -2,10 +2,9 @@
 # Builds the static single-binary bundle (core + ui-inn + foir + arMLEt + altru + suxty) with LTO from COPIES of the sources.
 #   mupen64plus-pow2/bundle/build-bundle.sh x86_64|aarch64|rg35xxsp [out-dir]   -> <out-dir>/mupen64plus-pow2   (default out-dir: <pow2>/out/<target>)
 #   env: JOBS (default nproc), SDL2_LIBDIR (aarch64: dir with the device's libSDL2-2.0.so.0, default the host's aarch64 one),
-#        WORK (default <pow2>/work/<target>), POW2_SRC=sibling (take the sources from ../<repo> next to this repo instead of the ext/ submodules),
-#        RG35_TOOLCHAIN (default ../toolchains/rg35xxsp next to this repo)
+#        RG35_TOOLCHAIN (default ../resources/toolchains/rg35xxsp, relative to this repo)
 #        WORK (default <pow2>/work/<target>), SKIP_LINK=1 to stop after the archives, RELINK=1 to redo only the final link (and the copy)
-# aarch64: Ubuntu cross gcc/g++ (rgdsplus, glibc 2.44).  rg35xxsp: toolchains/rg35xxsp (glibc 2.31 floor): C with the host GCC 13 (LTO),
+# aarch64: Ubuntu cross gcc/g++ (rgdsplus, glibc 2.44).  rg35xxsp: resources/toolchains/rg35xxsp (glibc 2.31 floor): C with the host GCC 13 (LTO),
 # arMLEt's C++ (parallel-rsp) with the host g++-12 and NO LTO (GCC 12 and 13 LTO bytecode do not mix), libstdc++/libgcc static from the sysroot (GCC 10).
 # Generic armv8-a, -O3, no -mcpu/-march.
 set -e
@@ -14,9 +13,9 @@ H=$(cd "$(dirname "$0")" && pwd); P=$(cd "$H/.." && pwd); R=$(cd "$P/.." && pwd)
 JOBS=${JOBS:-$(nproc)}; W=${WORK:-$P/work/$target}; O=${2:-$P/out/$target}
 LTO="-flto=$JOBS"
 X=aarch64-linux-gnu-; ARCHMK=(HOST_CPU=aarch64 CROSS_COMPILE=$X)
-if [ "${POW2_SRC:-ext}" = sibling ]; then SRC=$R; else SRC=$P/ext; fi
+SRC=$P/ext
 for d in mupen64plus-core-dento mupen64plus-ui-inn mupen64plus-rdp-foir mupen64plus-rsp-armlet mupen64plus-audio-altru mupen64plus-input-suxty; do
-    [ -f "$SRC/$d/Makefile" -o -d "$SRC/$d/src" ] || { echo "$SRC/$d is empty: git submodule update --init --recursive (or POW2_SRC=sibling)" >&2; exit 1; }
+    [ -f "$SRC/$d/Makefile" -o -d "$SRC/$d/src" ] || { echo "$SRC/$d is empty: git submodule update --init --recursive" >&2; exit 1; }
 done
 case $target in
 x86_64)
@@ -31,7 +30,7 @@ aarch64)
     SDL_LDLIBS="-L$SDLLIB -l:libSDL2-2.0.so.0 -Wl,--allow-shlib-undefined -Wl,-rpath-link,$SDLLIB"
     EXTRA_INC=""; LIBDIR=/usr/lib/aarch64-linux-gnu; ZLIB=-l:libz.a; PNG="-l:libpng16.a" ;;
 rg35xxsp)
-    T=${RG35_TOOLCHAIN:-$R/toolchains/rg35xxsp}; CC=$T/bin/rg35-gcc; CXXLTO=-fno-lto
+    T=${RG35_TOOLCHAIN:-$R/resources/toolchains/rg35xxsp}; CC=$T/bin/rg35-gcc; CXXLTO=-fno-lto
     TCFILE=$T/toolchain-rg35xxsp.cmake
     SDL_CFLAGS="-I$T/sdl2-stub/include/SDL2 -D_REENTRANT"
     SDL_LDLIBS="-L$T/sdl2-stub/lib -l:libSDL2-2.0.so.0 -Wl,--allow-shlib-undefined"

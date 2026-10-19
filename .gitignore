@@ -7,3 +7,4 @@
 *.so
 *.so.*
 __pycache__/
+/test-output/

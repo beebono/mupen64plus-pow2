@@ -39,9 +39,7 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
 git clone --recurse-submodules https://github.com/beebono/mupen64plus-pow2
 bundle/build-bundle.sh x86_64                  # desktop, native gcc, scalar foir   -> out/x86_64/mupen64plus-pow2
 bundle/build-bundle.sh aarch64                 # Ubuntu aarch64-linux-gnu-* cross   -> out/aarch64/mupen64plus-pow2
-RG35_TOOLCHAIN=<path to toolchains/rg35xxsp> \
-bundle/build-bundle.sh rg35xxsp                # glibc 2.31 sysroot, floor check <= 2.17 -> out/rg35xxsp/mupen64plus-pow2
-POW2_SRC=sibling bundle/build-bundle.sh ...    # sources from ../<repo> instead of ext/
+bundle/build-bundle.sh rg35xxsp                # (RG35_TOOLCHAIN overrides ../resources/toolchains/rg35xxsp)  glibc 2.31 sysroot, floor check <= 2.17 -> out/rg35xxsp/mupen64plus-pow2
 ```
 
 - Sources are copied to `work/<target>/` first; `JOBS`, `SDL2_LIBDIR` (aarch64: dir with the device's `libSDL2-2.0.so.0`), `SKIP_LINK=1`,
