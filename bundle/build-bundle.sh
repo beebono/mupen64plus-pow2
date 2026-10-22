@@ -6,6 +6,7 @@
 #        sysroot: SYSROOT (required), CROSS_COMPILE (default aarch64-linux-gnu-, may be a full path prefix), CMAKE_TOOLCHAIN_FILE (optional);
 #                 SDL2, zlib and libpng are linked dynamically from the sysroot (distribution builds, e.g. ROCKNIX)
 #        POW2_NO_LTO=1 to build without LTO
+#        POW2_SHARED_STDCXX=1 to link libstdc++ dynamically (toolchains without libstdc++.a, e.g. ROCKNIX)
 #        WORK (default <pow2>/work/<target>), SKIP_LINK=1 to stop after the archives, RELINK=1 to redo only the final link (and the copy)
 # aarch64: Ubuntu cross gcc/g++ (rgdsplus, glibc 2.44).  rg35xxsp: resources/toolchains/rg35xxsp (glibc 2.31 floor): C with the host GCC 13 (LTO),
 # arMLEt's C++ (parallel-rsp) with the host g++-12 and NO LTO (GCC 12 and 13 LTO bytecode do not mix), libstdc++/libgcc static from the sysroot (GCC 10).
@@ -86,7 +87,7 @@ if [ -n "$STATIC_LIBGCC_DIR" ]; then
     "$T/bin/rg35-g++" -O2 -fno-lto -c "$H/stdcxx_compat.cpp" -o "$W/stdcxx_compat.o"
     LD="$W/stdcxx_compat.o -Wl,--wrap=pow -L$STATIC_LIBGCC_DIR $LD"
 fi
-make -C "$W/mupen64plus-ui-inn/projects/unix" all BUNDLE=1 "${MK[@]}" SDL_CFLAGS="$SDL_CFLAGS" SDL_LDLIBS="$SDL_LDLIBS" BUNDLE_LIBS="$LIBS" BUNDLE_LDLIBS="$LD"
+make -C "$W/mupen64plus-ui-inn/projects/unix" all BUNDLE=1 "${MK[@]}" SDL_CFLAGS="$SDL_CFLAGS" SDL_LDLIBS="$SDL_LDLIBS" BUNDLE_LIBS="$LIBS" BUNDLE_LDLIBS="$LD" ${POW2_SHARED_STDCXX:+BUNDLE_STDCXX=-lstdc++}
 cp "$W/mupen64plus-ui-inn/projects/unix/mupen64plus-pow2" "$O/"
 f=$O/mupen64plus-pow2
 echo "$f: $(stat -c %s "$f") bytes; exports: $(${X}nm -D --defined-only "$f" | wc -l)"
