@@ -1,18 +1,21 @@
 #!/bin/bash
 # Builds the static single-binary bundle (core + ui-inn + foir + arMLEt + altru + suxty) with LTO from COPIES of the sources.
-#   mupen64plus-pow2/bundle/build-bundle.sh x86_64|aarch64|rg35xxsp [out-dir]   -> <out-dir>/mupen64plus-pow2   (default out-dir: <pow2>/out/<target>)
+#   mupen64plus-pow2/bundle/build-bundle.sh x86_64|aarch64|rg35xxsp|sysroot [out-dir]   -> <out-dir>/mupen64plus-pow2   (default out-dir: <pow2>/out/<target>)
 #   env: JOBS (default nproc), SDL2_LIBDIR (aarch64: dir with the device's libSDL2-2.0.so.0, default the host's aarch64 one),
 #        RG35_TOOLCHAIN (default ../resources/toolchains/rg35xxsp, relative to this repo)
+#        sysroot: SYSROOT (required), CROSS_COMPILE (default aarch64-linux-gnu-, may be a full path prefix), CMAKE_TOOLCHAIN_FILE (optional);
+#                 SDL2, zlib and libpng are linked dynamically from the sysroot (distribution builds, e.g. ROCKNIX)
+#        POW2_NO_LTO=1 to build without LTO
 #        WORK (default <pow2>/work/<target>), SKIP_LINK=1 to stop after the archives, RELINK=1 to redo only the final link (and the copy)
 # aarch64: Ubuntu cross gcc/g++ (rgdsplus, glibc 2.44).  rg35xxsp: resources/toolchains/rg35xxsp (glibc 2.31 floor): C with the host GCC 13 (LTO),
 # arMLEt's C++ (parallel-rsp) with the host g++-12 and NO LTO (GCC 12 and 13 LTO bytecode do not mix), libstdc++/libgcc static from the sysroot (GCC 10).
 # Generic armv8-a, -O3, no -mcpu/-march.
 set -e
-target=${1:?usage: build-bundle.sh x86_64|aarch64|rg35xxsp [out-dir]}
+target=${1:?usage: build-bundle.sh x86_64|aarch64|rg35xxsp|sysroot [out-dir]}
 H=$(cd "$(dirname "$0")" && pwd); P=$(cd "$H/.." && pwd); R=$(cd "$P/.." && pwd)
 JOBS=${JOBS:-$(nproc)}; W=${WORK:-$P/work/$target}; O=${2:-$P/out/$target}
-LTO="-flto=$JOBS"
-X=aarch64-linux-gnu-; ARCHMK=(HOST_CPU=aarch64 CROSS_COMPILE=$X)
+LTO="-flto=$JOBS"; [ -n "$POW2_NO_LTO" ] && LTO=-fno-lto
+X=${CROSS_COMPILE:-aarch64-linux-gnu-}; ARCHMK=(HOST_CPU=aarch64 CROSS_COMPILE=$X)
 SRC=$P/ext
 for d in mupen64plus-core-dento mupen64plus-ui-inn mupen64plus-rdp-foir mupen64plus-rsp-armlet mupen64plus-audio-altru mupen64plus-input-suxty; do
     [ -f "$SRC/$d/Makefile" -o -d "$SRC/$d/src" ] || { echo "$SRC/$d is empty: git submodule update --init --recursive" >&2; exit 1; }
@@ -38,6 +41,10 @@ rg35xxsp)
     # host libpng (headers are arch independent, libpng16.a has no glibc 2.3x-only imports; the floor check below proves it)
     EXTRA_INC="-I/usr/include/libpng16"
     STATIC_LIBGCC_DIR=$T/sysroot/usr/lib/gcc/aarch64-linux-gnu/10 ;;
+sysroot)
+    S=${SYSROOT:?sysroot target needs SYSROOT}; CC=${X}gcc; CXXLTO=$LTO; TCFILE=$CMAKE_TOOLCHAIN_FILE
+    SDL_CFLAGS="-I$S/usr/include/SDL2 -D_REENTRANT"; SDL_LDLIBS="-L$S/usr/lib -lSDL2"
+    LIBDIR=$S/usr/lib; ZLIB=-lz; PNG=-lpng16; EXTRA_INC="-I$S/usr/include/libpng16" ;;
 *) echo "unknown target $target" >&2; exit 2 ;;
 esac
 API=$W/mupen64plus-core-dento/src/api
@@ -64,7 +71,7 @@ echo "== suxty";  make -C "$W/mupen64plus-input-suxty/projects/unix" -j"$JOBS" a
 echo "== armlet"
 cmake -S "$W/mupen64plus-rsp-armlet" -B "$W/armlet-build" -G Ninja -DCMAKE_BUILD_TYPE=Release ${TCFILE:+-DCMAKE_TOOLCHAIN_FILE="$TCFILE"} \
     -DARMLET_STATIC=ON -DARMLET_BUNDLE_DIR="$W/mupen64plus-pow2/bundle" -DM64P_API_INCLUDE_DIR="$API" \
-    -DCMAKE_C_FLAGS="$LTO" -DCMAKE_CXX_FLAGS="$CXXLTO" -DCMAKE_AR=/usr/bin/${X}gcc-ar -DCMAKE_RANLIB=/usr/bin/${X}gcc-ranlib >/dev/null
+    -DCMAKE_C_FLAGS="$LTO" -DCMAKE_CXX_FLAGS="$CXXLTO" -DCMAKE_AR=$(command -v ${X}gcc-ar) -DCMAKE_RANLIB=$(command -v ${X}gcc-ranlib) >/dev/null
 cmake --build "$W/armlet-build"
 python3 "$W/mupen64plus-pow2/bundle/check-clashes.py" ui=/dev/null core="$W/mupen64plus-core-dento/projects/unix/libmupen64plus.a" \
     foir="$FOIRLIB" altru="$W/mupen64plus-audio-altru/projects/unix/libaltru.a" \
