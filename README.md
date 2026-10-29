@@ -7,7 +7,12 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
 ## What Is Inside
 
 - **Core (dento)**: `mupen64plus-core-dento`, our core fork; new arm64 dynarec on aarch64. Built with a built-in plugin table
-  (`M64P_STATIC_PLUGINS`), no OSD (suxty draws the menu).
+  (`M64P_STATIC_PLUGINS`), no OSD (suxty draws the menu). Core options of the fork: `Core[RspGfxTaskDelay]` (cycles between the end of a
+  graphics task and its SP interrupt, default 262144; upstream's 1000 makes a task "finish" 10 us after it started, this stands in for the
+  time the RSP would have taken) and `Core[RspResumeDelay]` (cycles before a task the RSP plugin left unfinished, one that waits for the
+  CPU, is run again on the next SP status write; default 262144, upstream 1000). Gauntlet Legends went from 27.5 to 49.8 game frames per
+  second on the RK3566 with the two (its task was cut and resumed ~800 times per frame); Banjo-Tooie, Mario Tennis, Pokemon Snap, Mario
+  Party 3, Hot Wheels and Cruis'n USA are unchanged, as is every game that never leaves a task unfinished apart from the interrupt's timing.
 - **Front-end (inn)**: `mupen64plus-ui-inn`, the console front-end; in bundle mode the core is the executable itself.
 - **Video (foir)**: `mupen64plus-rdp-foir`, LLE software RDP, hand-written NEON kernels, order-exact worker threads, no GPU rendering path.
 - **RSP (arMLEt)**: `mupen64plus-rsp-armlet`, rsp-hle audio/JPEG/video HLE, native C/NEON graphics for the known ucodes (probe + validated latch for
