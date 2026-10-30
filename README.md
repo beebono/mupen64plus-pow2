@@ -18,7 +18,12 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
   The Rare games are unaffected by it (their watchdog is on the SP interrupt). It must stay under one VI (811000): at 900000 every
   60 fps game (Mischief Makers, Dr. Mario, Ridge Racer, Pilotwings, Smash ...) halves its frames; at 600000 none of the 66 games of the
   rgdsplus changed its drawn frames in game, only a few boot sequences and Gauntlet (full speed on the RK3566, 26.8 -> 17.9 ms/VI on
-  the H700). Hot Wheels and Pokemon Snap would need more than 600000 and keep their slow-motion.
+  the H700). `Core[RdpFullSyncDelayMax]` (default 900000) makes it adaptive: while the emulator is behind real time the delay rises
+  4000 a VI towards the maximum (the game then draws fewer frames, as it did on a console too slow for it, instead of slow motion) and
+  falls back 20000 a second of VIs with slack; a game that keeps up never leaves the minimum. Hot Wheels (race) and the Pokemon Snap
+  zoom go from 24-27 ms/VI to full speed at half the frames on both devices; Banjo-Tooie and Mario Tennis are VI-locked at 30 and
+  unchanged. A game marginally behind (Pilotwings' intro) hunts between 60 and 30 frames. Max <= Delay makes it fixed, which the
+  equivalence harness sets (the delay would otherwise depend on the wall clock).
 - **Front-end (inn)**: `mupen64plus-ui-inn`, the console front-end; in bundle mode the core is the executable itself.
 - **Video (foir)**: `mupen64plus-rdp-foir`, LLE software RDP, hand-written NEON kernels, order-exact worker threads, no GPU rendering path.
 - **RSP (arMLEt)**: `mupen64plus-rsp-armlet`, rsp-hle audio/JPEG/video HLE, native C/NEON graphics for the known ucodes (probe + validated latch for
