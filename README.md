@@ -12,7 +12,13 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
   1000; with the default 4-6 times, 31.3 -> 20.5 us per primitive on the RK3566. Only a task left unfinished is affected: no other game of
   the sets leaves one. `Core[RspGfxTaskDelay]` (the cycles between the end of a graphics task and its SP interrupt, default 0 = upstream's
   1000) is experimental: it changes the game's pacing, not the cost per primitive, and above 32000 the Rare games (Conker, Jet Force Gemini)
-  stop rendering (their RSP watchdog).
+  stop rendering (their RSP watchdog). `Core[RdpFullSyncDelay]` (the cycles between the end of a graphics task and its DP interrupt, i.e.
+  the full sync; default 600000, upstream 4000) stands in for the RDP's drawing time: a game that starts its next frame when the last one
+  is drawn (Gauntlet Legends draws one per VI with an instant RDP, where the console managed about every second one) paces itself by it.
+  The Rare games are unaffected by it (their watchdog is on the SP interrupt). It must stay under one VI (811000): at 900000 every
+  60 fps game (Mischief Makers, Dr. Mario, Ridge Racer, Pilotwings, Smash ...) halves its frames; at 600000 none of the 66 games of the
+  rgdsplus changed its drawn frames in game, only a few boot sequences and Gauntlet (full speed on the RK3566, 26.8 -> 17.9 ms/VI on
+  the H700). Hot Wheels and Pokemon Snap would need more than 600000 and keep their slow-motion.
 - **Front-end (inn)**: `mupen64plus-ui-inn`, the console front-end; in bundle mode the core is the executable itself.
 - **Video (foir)**: `mupen64plus-rdp-foir`, LLE software RDP, hand-written NEON kernels, order-exact worker threads, no GPU rendering path.
 - **RSP (arMLEt)**: `mupen64plus-rsp-armlet`, rsp-hle audio/JPEG/video HLE, native C/NEON graphics for the known ucodes (probe + validated latch for
