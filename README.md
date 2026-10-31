@@ -24,6 +24,10 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
   zoom go from 24-27 ms/VI to full speed at half the frames on both devices; Banjo-Tooie and Mario Tennis are VI-locked at 30 and
   unchanged. A game marginally behind (Pilotwings' intro) hunts between 60 and 30 frames. Max <= Delay makes it fixed, which the
   equivalence harness sets (the delay would otherwise depend on the wall clock).
+  Dynarec (arm64): a block exit through a conditional branch is linked through its stub (upstream left those unlinked because `b.cond`
+  reaches only 1 MB, so every taken one called the C linker: 6.7 % of Banjo-Tooie's emulation thread), and the indirect-jump lookup
+  reads a compact shadow of the block hash table (one cache line, no list entry to chase: 5.3 -> 2.6 %). Together 34.0 -> 32.2 ms per
+  drawn VI in Banjo-Tooie on the RK3566, 36.5 -> 34.7 on the H700; Mario Tennis 30.4 -> 29.4 on the H700. Bit-exact (same code runs).
 - **Front-end (inn)**: `mupen64plus-ui-inn`, the console front-end; in bundle mode the core is the executable itself.
 - **Video (foir)**: `mupen64plus-rdp-foir`, LLE software RDP, hand-written NEON kernels, order-exact worker threads, no GPU rendering path.
 - **RSP (arMLEt)**: `mupen64plus-rsp-armlet`, rsp-hle audio/JPEG/video HLE, native C/NEON graphics for the known ucodes (probe + validated latch for
