@@ -24,6 +24,13 @@ are ignored with a warning. SDL2 stays dynamic (the device's own). Generic armv8
   zoom go from 24-27 ms/VI to full speed at half the frames on both devices; Banjo-Tooie and Mario Tennis are VI-locked at 30 and
   unchanged. A game marginally behind (Pilotwings' intro) hunts between 60 and 30 frames. Max <= Delay makes it fixed, which the
   equivalence harness sets (the delay would otherwise depend on the wall clock).
+  With foir (its optional `RdpSyncClocks` export) the delay is no longer a constant: foir estimates the RDP clocks of the commands before
+  each full sync from the primitives' shapes (armN64's model: area by cycle type plus setup; foir docs/design.md) and the DP interrupt
+  comes `Core[RdpClockScale]` (default 250 %) of that later, rising towards `Core[RdpClockScaleMax]` (400 %) while behind, at the
+  same rates as above; `RdpFullSyncDelay(Max)` remain the fallback for plugins without the export and the fixed/adaptive switch.
+  Why: a game with two full syncs a frame paid the constant twice (Mario Party 2: 40 fps instead of 60 in its double-sync scenes, 60
+  with the estimate). At 250 % Gauntlet's ~325k-clock frames get about the old 600000; F-Zero X, Mario Tennis, Super Mario 64 and Hot
+  Wheels' race draw the same frames as with the constant (desktop, 90 s from boot).
   Dynarec (arm64): a block exit through a conditional branch is linked through its stub (upstream left those unlinked because `b.cond`
   reaches only 1 MB, so every taken one called the C linker: 6.7 % of Banjo-Tooie's emulation thread), and the indirect-jump lookup
   reads a compact shadow of the block hash table (one cache line, no list entry to chase: 5.3 -> 2.6 %). Together 34.0 -> 32.2 ms per
